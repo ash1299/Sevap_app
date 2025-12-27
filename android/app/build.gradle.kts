@@ -79,7 +79,8 @@ tasks.register("copyReleaseApk") {
     }
 }
 
-tasks.named("assembleRelease") {
+// Some AGP versions create tasks lazily; configure the copy task to finalize any existing or future assembleRelease task
+tasks.matching { it.name == "assembleRelease" }.configureEach {
     finalizedBy("copyReleaseApk")
 }
 }
