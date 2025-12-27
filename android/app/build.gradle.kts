@@ -51,10 +51,37 @@ android {
         release {
             // RESTORED: Use the release key, NOT the debug key
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // Enable minification and resource shrinking for production releases.
+            // These are memory-intensive; Gradle JVM heap must be increased (see gradle.properties).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            // Keep debug-friendly mapping file mapping for troubleshooting if needed
         }
     }
+
+// Ensure Flutter tooling can find the output APK produced by Gradle.
+// Some Flutter versions expect the APK under <root>/build/app/outputs/flutter-apk/.
+// Add a small task to copy the release APK after assembleRelease so Flutter's lookup succeeds.
+tasks.register("copyReleaseApk") {
+    doLast {
+        val apkFile = file("${project.buildDir}/outputs/apk/release/app-release.apk")
+        val destDir = file("${rootProject.buildDir}/app/outputs/flutter-apk/")
+        if (apkFile.exists()) {
+            destDir.mkdirs()
+            copy {
+                from(apkFile)
+                into(destDir)
+            }
+            println("Copied release APK to: ${destDir.absolutePath}")
+        } else {
+            println("Release APK not found at: ${apkFile.absolutePath}")
+        }
+    }
+}
+
+tasks.named("assembleRelease") {
+    finalizedBy("copyReleaseApk")
+}
 }
 
 flutter {

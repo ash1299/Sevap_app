@@ -15,12 +15,14 @@ This project requires a reproducible Android build configuration. Follow these s
 - `android.enableJetifier=false`  # Disabled because the project uses AndroidX
 
 ## Build commands
-- For normal release (shrinking enabled):
+- For normal release (shrinking enabled — recommended for production):
 
 ```
 flutter clean
 flutter build apk --release
 ```
+
+Note: Shrinking (R8) requires more JVM heap for Gradle. Ensure `org.gradle.jvmargs` in `android/gradle.properties` is increased (e.g., `-Xmx3072M`).
 
 - For low-memory environments (skip shrinking):
 
