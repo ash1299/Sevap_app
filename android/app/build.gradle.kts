@@ -1,8 +1,12 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // RESTORED: This is required for Firebase to work
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -11,38 +15,53 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_21.toString()
-        // Keep Kotlin compatibility default; increase only if build or compiler warns
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.sevak_app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        
-        // FIX: CHANGED THIS TO 21 (Required for File Picker & Bluetooth)
         minSdk = flutter.minSdkVersion
-        
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    // RESTORED: Load your real release key from key.properties
+    signingConfigs {
+        create("release") {
+            val keyPropertiesFile = rootProject.file("key.properties")
+            val props = Properties()
+            if (keyPropertiesFile.exists()) {
+                FileInputStream(keyPropertiesFile).use { props.load(it) }
+            }
+
+            keyAlias = props.getProperty("keyAlias")
+            keyPassword = props.getProperty("keyPassword")
+            storeFile = props.getProperty("storeFile")?.let { file(it) }
+            storePassword = props.getProperty("storePassword")
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // RESTORED: Use the release key, NOT the debug key
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // RESTORED: Firebase dependencies
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
 }
