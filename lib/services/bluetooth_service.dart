@@ -105,7 +105,13 @@ class SevakBluetoothService {
     try { FlutterBluePlus.stopScan(); } catch (e) {}
   }
 
-  Stream<List<ScanResult>> get scanResults => FlutterBluePlus.onScanResults;
+  // ✅ ✅ ✅ FIXED: FILTERING ADDED HERE ✅ ✅ ✅
+  // This now checks every device found. If it has no name, it is REMOVED from the list.
+  Stream<List<ScanResult>> get scanResults => FlutterBluePlus.onScanResults.map(
+    (results) => results
+        .where((r) => r.device.platformName.isNotEmpty) // ONLY allow devices with names
+        .toList(),
+  );
 
   Future<void> _discoverServices(BluetoothDevice device) async {
     List<BluetoothService> services = await device.discoverServices();
@@ -134,7 +140,7 @@ class SevakBluetoothService {
     _statusController.add("Disconnected");
   }
 
-  // --- 4. INCOMING DATA HANDLING (FIXED) ---
+  // --- 4. INCOMING DATA HANDLING ---
   void _handleIncomingData(List<int> bytes) async {
     if (bytes.isEmpty) return;
     try {
@@ -142,24 +148,17 @@ class SevakBluetoothService {
       _rawStringController.add(rawString); 
 
       // --- CRITICAL FIX: DETECT SCHEDULE DATA (NON-JSON) ---
-      // If data looks like "S1,6,30,7,30,1", handle it manually.
       if (rawString.startsWith("S1") || rawString.startsWith("S2") || rawString.startsWith("S3")) {
-        
-        // Split "S1,6,30,7,30,1" into ["S1", "6,30,7,30,1"]
         int firstComma = rawString.indexOf(',');
         if (firstComma != -1) {
-            String key = rawString.substring(0, firstComma); // "S1"
-            String value = rawString.substring(firstComma + 1); // "6,30,7,30,1"
+            String key = rawString.substring(0, firstComma); 
+            String value = rawString.substring(firstComma + 1); 
             
-            // Create a Map so the UI can process it
             Map<String, dynamic> scheduleData = { key: value };
-            
-            // Send to UI immediately
             _dataStreamController.add(scheduleData);
-            return; // STOP HERE. Do not parse as JSON.
+            return; 
         }
       }
-      // ----------------------------------------------------
 
       // JSON LOGIC (For Telemetry)
       String rawJson = rawString;
@@ -204,16 +203,15 @@ class SevakBluetoothService {
           }
       }
     } catch (e) {
-      // print("Error parsing data: $e"); // Debugging
+      // Ignore parse errors
     }
   }
 
-  // --- 5. OTA UPLOAD (SMART MODE FIX) ---
+  // --- 5. OTA UPLOAD ---
   Future<void> uploadFirmware(File f, Function(double) p) async {
     if (_otaChar == null) throw Exception("OTA Not Supported.");
     
     // FIX: Check if the device supports fast writing. 
-    // If not, use safe writing (with response) to prevent the crash.
     bool canWriteFast = _otaChar!.properties.writeWithoutResponse;
     print("OTA Upload Mode: ${canWriteFast ? 'FAST' : 'SAFE'}");
 
@@ -225,17 +223,14 @@ class SevakBluetoothService {
       int end = offset + chunkSize;
       if (end > bytes.length) end = bytes.length;
       
-      // Use the correct mode dynamically
       await _otaChar!.write(bytes.sublist(offset, end), withoutResponse: canWriteFast);
       
       offset += (end - offset);
       p(offset / bytes.length);
       
-      // Small delay helps stability
       await Future.delayed(const Duration(milliseconds: 5));
     }
 
-    // Send EOF Signal
     print("Sending EOF Signal...");
     await _otaChar!.write(utf8.encode("EOF"), withoutResponse: false);
     print("Firmware Upload Complete!");

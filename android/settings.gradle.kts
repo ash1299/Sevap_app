@@ -24,8 +24,8 @@ plugins {
     id("com.android.application") version "8.6.0" apply false
     id("com.android.library") version "8.6.0" apply false
 
-    // UPDATED: 1.9.23 -> 1.9.24 (Stable update)
-    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+    // UPDATED: 1.9.24 -> 2.1.0 (Required for Flutter compatibility)
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
     id("com.google.gms.google-services") version "4.4.2" apply false
 }
 

@@ -10,9 +10,12 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
 
     <application
-        android:label="Apna Sevak" 
+        android:label="apna sevak"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon"
+
+        android:allowBackup="false"
+        android:fullBackupContent="false">
         
         <activity
             android:name=".MainActivity"

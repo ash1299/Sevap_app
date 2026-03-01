@@ -10,7 +10,6 @@ import '../services/bluetooth_service.dart';
 import '../services/user_preferences.dart'; 
 import '../widgets/device_info_card.dart';
 import '../widgets/app_drawer.dart'; 
-// import 'monitor_screen.dart';
 import 'login_screen.dart'; 
 import 'schedules_screen.dart'; 
 
@@ -184,21 +183,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
+      backgroundColor: Colors.black, 
       drawer: SevakDrawer(
         userName: widget.userName,
         phoneNumber: widget.phoneNumber,
       ), 
       appBar: AppBar(
+        backgroundColor: Colors.black,
         leading: IconButton(
-          icon: const Icon(Icons.menu), 
+          icon: const Icon(Icons.menu, color: Colors.white, size: 28), 
           onPressed: () => _scaffoldKey.currentState?.openDrawer()
         ),
-        // REMOVED: Title and CenterTitle
+        titleSpacing: 0,
+        title: const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: 6.0, right: 2.0),
+              child: Text(
+                "अपना", 
+                style: TextStyle(fontSize: 10, color: Colors.white, height: 1.0),
+              ),
+            ),
+            Text(
+              "SEVAK",
+              style: TextStyle(
+                fontFamily: 'RobotoCondensed', 
+                fontWeight: FontWeight.w900, 
+                fontSize: 26,
+                letterSpacing: 0.5,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
         actions: [
-          IconButton(icon: const Icon(Icons.cloud_upload), onPressed: _pickAndUploadFirmware),
-          // REMOVED: Console/Monitor Icon
+          IconButton(icon: const Icon(Icons.cloud_upload, color: Colors.white), onPressed: _pickAndUploadFirmware),
           IconButton(
-            icon: Icon(isConnected ? Icons.bluetooth_connected : Icons.bluetooth_disabled), 
+            icon: Icon(isConnected ? Icons.bluetooth_connected : Icons.bluetooth_disabled, color: Colors.white), 
             onPressed: isConnected ? SevakBluetoothService.instance.disconnect : _showDeviceList,
           ),
           IconButton(
@@ -214,18 +236,19 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               DeviceInfoCard(status: connectionStatus, isConnected: isConnected, deviceTime: deviceTime),
-              const SizedBox(height: 30),
               
-              // --- 1. SEVAK DEVICE IMAGE ---
+              const SizedBox(height: 20),
+              
+              // --- SEVAK DEVICE IMAGE ---
               ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: Image.asset(
                   'Assets/sevak_img.jpeg',
-                  height: 180,
+                  height: 260, 
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      height: 180,
+                      height: 260,
                       width: double.infinity,
                       color: Colors.grey[900],
                       child: const Center(child: Text("Image not found", style: TextStyle(color: Colors.grey))),
@@ -234,9 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               
-              const SizedBox(height: 50), 
+              const SizedBox(height: 30), 
               
-              // --- 2. SCHEDULES BUTTON ---
+              // --- SCHEDULES BUTTON (New Premium Look) ---
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -245,55 +268,74 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 child: Container(
-                  width: 280, 
-                  height: 90,
+                  width: double.infinity, 
+                  height: 80, 
                   decoration: BoxDecoration(
-                    color: AppTheme.cardColor, 
-                    borderRadius: BorderRadius.circular(45),
-                    border: Border.all(
-                      color: Colors.white24, 
-                      width: 2
-                    ),
+                    color: const Color(0xFF281423), 
+                    borderRadius: BorderRadius.circular(40), 
                   ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.calendar_month, color: Colors.white, size: 32),
-                      SizedBox(width: 15),
-                      Text(
-                        "Schedules",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 26, 
-                          fontWeight: FontWeight.bold,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                             SizedBox(
+                               width: 40, height: 40,
+                               child: Stack(
+                                 children: [
+                                   const Icon(Icons.calendar_month, color: Colors.white, size: 38),
+                                   Positioned(
+                                     bottom: 0, right: 0,
+                                     child: Container(
+                                       padding: const EdgeInsets.all(2),
+                                       decoration: const BoxDecoration(color: Color(0xFF281423), shape: BoxShape.circle),
+                                       child: const Icon(Icons.access_time_filled, color: Colors.white, size: 14),
+                                     )
+                                   )
+                                 ],
+                               ),
+                             ),
+                             const SizedBox(width: 15),
+                             const Text(
+                               "Schedules",
+                               style: TextStyle(
+                                 color: Colors.white,
+                                 fontSize: 34, 
+                                 fontWeight: FontWeight.w900,
+                                 fontFamily: 'Impact', 
+                                 letterSpacing: 0.5,
+                               ),
+                             ),
+                          ],
                         ),
-                      ),
-                      SizedBox(width: 10),
-                      Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 24)
-                    ],
+                        const Icon(Icons.arrow_forward, color: Colors.white, size: 40) 
+                      ],
+                    ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 30), 
+              const SizedBox(height: 20),
 
-              // --- 3. POWER BUTTON ---
+              // --- POWER BUTTON (Restored: "SYSTEM OFF" Text Style) ---
               GestureDetector(
                 onTap: _togglePower, 
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  width: 240, 
-                  height: 80,
+                  width: double.infinity, 
+                  height: 80, 
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(40),
-                    color: isMotorOn 
-                        ? AppTheme.accentGreen.withValues(alpha: 0.1) 
-                        : AppTheme.cardColor, 
+                    // Dark plum background
+                    color: const Color(0xFF281423), 
                     border: Border.all(
+                      // Border Color changes: Green if ON, Red if OFF
                       color: isMotorOn 
                           ? AppTheme.accentGreen 
-                          : AppTheme.errorRed.withValues(alpha: 0.5), 
-                      width: 3
+                          : AppTheme.errorRed, 
+                      width: 2
                     ),
                     boxShadow: [
                       if (isMotorOn) 
@@ -316,9 +358,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(
                         isMotorOn ? "SYSTEM ON" : "SYSTEM OFF", 
                         style: const TextStyle(
-                          fontSize: 20, 
+                          fontSize: 24, 
                           fontWeight: FontWeight.bold, 
-                          color: Colors.white
+                          color: Colors.white,
+                          letterSpacing: 1.0,
                         )
                       )
                     ],

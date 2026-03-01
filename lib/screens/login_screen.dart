@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
-import 'otp_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Auth
+import 'package:cloud_firestore/cloud_firestore.dart'; // Database
 import 'package:intl_phone_field/intl_phone_field.dart';
-import '../services/user_preferences.dart'; // REQUIRED IMPORT
+import '../theme.dart';
+import '../services/user_preferences.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,17 +17,23 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
 
-  // Stores the complete number with country code (e.g., +919876543210)
+  // Stores the complete number with country code
   String fullPhoneNumber = '';
 
-  // 1. Made async to handle UserPreferences saving
+  // Direct Login Function (No OTP)
   void _submitLogin() async {
-    // 2. Validate Input
+    // 1. Validate Input
     if (_formKey.currentState!.validate()) {
-      
       String name = _nameController.text.trim();
 
-      // Check if phone number is valid
+      // Added stricter logic check for name length
+      if (name.length < 3) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Name must be at least 3 characters")),
+        );
+        return;
+      }
+
       if (fullPhoneNumber.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Please enter a valid phone number")),
@@ -33,23 +41,74 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // ---------------------------------------------------------
-      // 3. UPDATED: Save User Data (Name AND Phone)
-      // ---------------------------------------------------------
-      await UserPreferences().saveUser(name, fullPhoneNumber);
-      
-      if (!mounted) return; // Safety check before navigating
-
-      // 4. Navigate to OTP Screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OtpScreen(
-            userName: name,
-            phoneNumber: fullPhoneNumber, // Passes the full code + number
-          ),
-        ),
+      // --- 2. SHOW LOADING SPINNER ---
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
+
+      try {
+        // Force Logout ensures every login creates a NEW User ID.
+        await FirebaseAuth.instance.signOut();
+
+        // --- 3. CREATE ACCOUNT IN FIREBASE (No OTP) ---
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInAnonymously();
+        User? user = userCredential.user;
+
+        if (user != null) {
+          // Prepare data object first
+          final Map<String, dynamic> userDataMap = {
+            'uid': user.uid,
+            'name': name,
+            'phoneNumber': fullPhoneNumber,
+            'createdAt': FieldValue.serverTimestamp(),
+            'loginMethod': 'Direct (No OTP)',
+          };
+
+          // Execute Firestore save AND Local save in PARALLEL.
+          await Future.wait([
+            // Task 1: Save to Firestore
+            FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .set(userDataMap),
+            // Task 2: Save Locally
+            UserPreferences().saveUser(name, fullPhoneNumber),
+          ]);
+
+          // Ensure widget is still mounted before modifying UI after async gaps
+          if (!mounted) return;
+          Navigator.pop(context); // Close loading dialog
+
+          // --- 6. GO TO HOME SCREEN ---
+          Navigator.pushReplacement(
+            context,
+            // Passing BOTH name and phone number
+            MaterialPageRoute(
+              builder: (context) => HomeScreen(
+                userName: name,
+                phoneNumber: fullPhoneNumber,
+              ),
+            ),
+          );
+        } else {
+          // Handle rare case where user is null despite no error thrown
+          throw Exception("Authentication succeeded but user is null");
+        }
+      } catch (e) {
+        // Handle Errors
+        if (!mounted) return;
+        Navigator.pop(context); // Close loading
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Login Failed: ${e.toString()}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -69,10 +128,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // --- Header ---
-                    const Icon(Icons.security, size: 80, color: AppTheme.primaryBlue),
-                    const SizedBox(height: 20),
+                    // Updated Text Here
                     const Text(
-                      "Welcome to SEVAK",
+                      "Welcome to Apna SEVAK", 
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: 28,
@@ -99,27 +157,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // --- Country Code Phone Field (Default: India) ---
+                    // --- Phone Field ---
                     IntlPhoneField(
                       decoration: _inputDecoration("Phone Number", Icons.phone),
                       style: const TextStyle(color: Colors.white),
                       dropdownTextStyle: const TextStyle(color: Colors.white),
-                      dropdownIcon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                      
-                      // SET DEFAULT TO INDIA
-                      initialCountryCode: 'IN', 
-                      
+                      dropdownIcon:
+                          const Icon(Icons.arrow_drop_down, color: Colors.white),
+                      initialCountryCode: 'IN',
                       onChanged: (phone) {
-                        // This updates the variable whenever the user types
                         fullPhoneNumber = phone.completeNumber;
-                      },
-                      onCountryChanged: (country) {
-                        // Optional: logic if they change flags
                       },
                     ),
                     const SizedBox(height: 40),
 
-                    // --- Continue Button ---
+                    // --- Login Button ---
                     SizedBox(
                       height: 55,
                       child: ElevatedButton(
@@ -131,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           elevation: 5,
                         ),
                         child: const Text(
-                          "Get OTP",
+                          "Login",
                           style: TextStyle(
                               fontSize: 18,
                               color: Colors.white,

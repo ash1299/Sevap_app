@@ -10,10 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  
   firebase_core: ^3.1.0
   cloud_firestore: ^5.6.12
-  
+  firebase_auth: ^5.1.0
   
   flutter_blue_plus: 1.31.17
   
@@ -31,18 +30,21 @@ dev_dependencies:
   
   flutter_launcher_icons: ^0.13.1
 
-
 flutter:
   uses-material-design: true
 
   assets:
     - Assets/sevak_new_img.jpeg
     - Assets/SEVAK_logo.jpg
+    # ✅ Added your new icon here so Flutter can see it
+    - Assets/icon.jpeg 
 
-
-
+# ✅ UPDATED: Points to your new "Apna Sevak" black logo
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "Assets/SEVAK_logo.jpg"
+  image_path: "Assets/icon.jpeg" 
   min_sdk_android: 21
+  # This ensures the black background looks perfect on newer Androids
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "Assets/icon.jpeg"

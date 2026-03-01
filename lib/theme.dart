@@ -4,8 +4,8 @@ class AppTheme {
   // --- BRAND COLORS ---
   static const Color background = Color(0xFF000000); // Pure Black
   
-  // UPDATED: Lighter Plum (Changed from 0xFF2F1728 to 0xFF4A253C)
-  static const Color primaryPlum = Color(0xFF4A253C); 
+  // ✅ UPDATED: Exact Deep Plum color from your screenshot (#47243C)
+  static const Color primaryPlum = Color(0xFF47243C); 
 
   // Map other colors to Plum so widgets update automatically
   static const Color primaryBlue = primaryPlum; 
@@ -44,23 +44,23 @@ class AppTheme {
         ),
       ),
 
-      // Card Theme (Using CardThemeData)
+      // Card Theme
       cardTheme: CardThemeData(
         color: cardColor, 
         elevation: 0,
         margin: const EdgeInsets.symmetric(vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Colors.white12, width: 1), // Subtle border
+          side: const BorderSide(color: Colors.white12, width: 1), 
         ),
       ),
 
-      // Dialog Theme (Using DialogThemeData)
+      // Dialog Theme
       dialogTheme: DialogThemeData(
-        backgroundColor: background, // Black Popup
+        backgroundColor: background, 
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: primaryPlum, width: 2), // Purple Border
+          side: const BorderSide(color: primaryPlum, width: 2), 
         ),
       ),
 
@@ -75,7 +75,7 @@ class AppTheme {
         ),
       ),
 
-      // Input Fields (Login, Feedback)
+      // Input Fields
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: primaryPlum, 

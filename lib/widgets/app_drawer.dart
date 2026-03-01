@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart'; // Ensure this package is in pubspec.yaml
+import 'package:url_launcher/url_launcher.dart'; 
 import '../theme.dart';
 import '../services/user_preferences.dart'; 
 import '../screens/update_screen.dart';
@@ -72,7 +72,6 @@ class SevakDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: Colors.black, 
-      // Use Column to push list up and footer down
       child: Column(
         children: [
           // 1. EXPANDED LIST (Takes up available space)
@@ -122,7 +121,8 @@ class SevakDrawer extends StatelessWidget {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const FeedbackScreen()));
                 }),
 
-                _buildDrawerTile(context, Icons.timer_outlined, "Global Timers", () {
+                // ✅ UPDATED: Now "Water Pump Settings" with a Water Drop icon
+                _buildDrawerTile(context, Icons.water_drop, "Water Pump Settings", () {
                   Navigator.pop(context);
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const GlobalTimersScreen()));
                 }),

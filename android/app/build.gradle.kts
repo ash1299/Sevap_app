@@ -1,5 +1,5 @@
-import java.io.FileInputStream
 import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
@@ -34,16 +34,20 @@ android {
         create("release") {
             val keyPropertiesFile = rootProject.file("key.properties")
             val props = Properties()
+            
             if (keyPropertiesFile.exists()) {
                 FileInputStream(keyPropertiesFile).use { props.load(it) }
             }
 
             keyAlias = props.getProperty("keyAlias")
             keyPassword = props.getProperty("keyPassword")
-            storeFile = props.getProperty("storeFile")?.let { file(it) }
-            storePassword = props.getProperty("storePassword")
             
-            // --- FIX 1: ENABLE SIGNING FOR INSTALLATION ---
+            val storePath = props.getProperty("storeFile")
+            if (storePath != null) {
+                storeFile = rootProject.file(storePath)
+            }
+            
+            storePassword = props.getProperty("storePassword")
             enableV1Signing = true
             enableV2Signing = true
         }
@@ -51,37 +55,57 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            if (rootProject.file("key.properties").exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                signingConfig = signingConfigs.getByName("debug")
+            }
             isMinifyEnabled = true
             isShrinkResources = true
         }
     }
 
-    // --- FIX 2: FORCE STABLE DEPENDENCIES FOR BUILD ---
     configurations.all {
         resolutionStrategy {
-            force("androidx.browser:browser:1.8.0")
-            force("androidx.core:core:1.15.0")
-            force("androidx.core:core-ktx:1.15.0")
+            force("androidx.browser:browser:1.8.0")        // Downgrade from 1.9.0
+            force("androidx.core:core:1.15.0")             // Downgrade from 1.17.0
+            force("androidx.core:core-ktx:1.15.0")         // Downgrade from 1.17.0
         }
     }
 }
 
-// Ensure Flutter can find the APK
+// --- HELPER TASKS TO ENSURE FLUTTER FINDS THE FILES ---
+
+// 1. For APK
 tasks.register("copyReleaseApk") {
     doLast {
         val apkFile = file("${project.buildDir}/outputs/apk/release/app-release.apk")
-        val repoRoot = projectDir.parentFile.parentFile 
-        val destDir = file("${repoRoot.absolutePath}/build/app/outputs/flutter-apk/")
+        val repoRoot = project.rootProject.projectDir
+        val destDir = file("${repoRoot}/build/app/outputs/flutter-apk/")
+        
         if (apkFile.exists()) {
             destDir.mkdirs()
             copy {
                 from(apkFile)
                 into(destDir)
             }
-            println("Copied release APK to: ${destDir.absolutePath}")
-        } else {
-            println("Release APK not found at: ${apkFile.absolutePath}")
+        }
+    }
+}
+
+// 2. For App Bundle (AAB) - ADDED THIS FIX
+tasks.register("copyReleaseAab") {
+    doLast {
+        val aabFile = file("${project.buildDir}/outputs/bundle/release/app-release.aab")
+        val repoRoot = project.rootProject.projectDir
+        val destDir = file("${repoRoot}/build/app/outputs/bundle/release/")
+        
+        if (aabFile.exists()) {
+            destDir.mkdirs()
+            copy {
+                from(aabFile)
+                into(destDir)
+            }
         }
     }
 }
@@ -90,10 +114,15 @@ tasks.matching { it.name == "assembleRelease" }.configureEach {
     finalizedBy("copyReleaseApk")
 }
 
+// Attach the new AAB fix to the bundle task
+tasks.matching { it.name == "bundleRelease" }.configureEach {
+    finalizedBy("copyReleaseAab")
+}
+
 flutter {
     source = "../.."
 }
 
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
-}
+}2
