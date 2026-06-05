@@ -44,7 +44,7 @@ class DeviceInfoCard extends StatelessWidget {
                   ],
                 ),
                 // UPDATED: Version matches Sevak 2.0 requirements
-                const Text("v.24m.00.01", style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+                const Text('v.1.0.0', style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
               ],
             ),
             const Divider(height: 30, color: Colors.white10),

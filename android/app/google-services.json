@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "743914922474",
+    "project_id": "sevak-b883e",
+    "storage_bucket": "sevak-b883e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:743914922474:android:772568a036a48d02cad293",
+        "android_client_info": {
+          "package_name": "com.archit.sevak_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwjVoiYk9vNLNBUZExny0rYktoBV5V2ow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:743914922474:android:b093f469cc7e163ccad293",
+        "android_client_info": {
+          "package_name": "com.example.sevak_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwjVoiYk9vNLNBUZExny0rYktoBV5V2ow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

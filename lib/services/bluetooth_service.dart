@@ -61,7 +61,7 @@ class SevakBluetoothService {
 
       // --- AUTOMATIC SETUP ---
       await Future.delayed(const Duration(milliseconds: 500)); 
-      await syncDeviceTime(); // Send Phone Time
+      await syncDeviceTime(); // Send Phone Date & Time
       await sendCommand("GET"); // Request Status Update
 
     } catch (e) {
@@ -70,11 +70,20 @@ class SevakBluetoothService {
     }
   }
 
+  // ✅ UPDATED: Now sends Date AND Time
   Future<void> syncDeviceTime() async {
     final now = DateTime.now();
-    // Command Format: "T,HH,MM,SS"
-    String timeCommand = "T,${now.hour},${now.minute},${now.second}";
-    print("Auto-Syncing Time: $timeCommand");
+
+    // 1. Format Date (e.g., "24/10/2023")
+    String currentDate = "${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}";
+
+    // 2. Format Time (e.g., "14:30:05")
+    String currentTime = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
+
+    // 3. Combine into one command: "T,DD/MM/YYYY,HH:MM:SS"
+    String timeCommand = "T,$currentDate,$currentTime";
+    
+    print("Auto-Syncing Date & Time: $timeCommand");
     await sendCommand(timeCommand);
   }
 

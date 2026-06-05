@@ -5,8 +5,8 @@ class UpdateScreen extends StatelessWidget {
   const UpdateScreen({super.key});
 
   // Version strings from Sevak 2.0 specifications
-  final String currentVersion = "v.24m.00.01";
-  final String latestVersion = "v.24m.00.02";
+  final String currentVersion = 'v.1.0.0';
+  final String latestVersion = 'v.1.0.0';
 
   @override
   Widget build(BuildContext context) {
